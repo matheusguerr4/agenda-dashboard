@@ -273,11 +273,14 @@
   }
 
   // Normaliza para formato internacional brasileiro (WhatsApp)
-  // Usa tamanho, não prefixo, pois DDD 55 (Caxias do Sul) é válido no Brasil
   function waNumero(tel) {
     const d = tel.replace(/\D/g, '');
-    if (d.length >= 12) return d;  // já tem +55
-    return '55' + d;               // adiciona +55
+    if (d.length >= 12) return d;        // já com código do país (ex: 5511996953014)
+    if (d.length === 11) return '55' + d; // DDD + 9 dígitos de celular (ex: 11996953014)
+    if (d.length === 10) return '55' + d; // DDD + 8 dígitos de fixo (ex: 1196953014)
+    // 9 dígitos = DDD(2) + número antigo(7) sem o 9 do celular → insere o 9 após o DDD
+    if (d.length === 9)  return '55' + d.slice(0, 2) + '9' + d.slice(2);
+    return '55' + d; // fallback
   }
 
   function formatarHora(dateTimeStr) {
