@@ -272,10 +272,12 @@
     return (subject || '').replace(/^Anivers[aá]rio\s+de\s+/i, '').trim();
   }
 
-  // Remove tudo que não é dígito; adiciona 55 (Brasil) se não começar com código de país
+  // Normaliza para formato internacional brasileiro (WhatsApp)
+  // Usa tamanho, não prefixo, pois DDD 55 (Caxias do Sul) é válido no Brasil
   function waNumero(tel) {
-    const digits = tel.replace(/\D/g, '');
-    return digits.startsWith('55') ? digits : '55' + digits;
+    const d = tel.replace(/\D/g, '');
+    if (d.length >= 12) return d;  // já tem +55
+    return '55' + d;               // adiciona +55
   }
 
   function formatarHora(dateTimeStr) {
