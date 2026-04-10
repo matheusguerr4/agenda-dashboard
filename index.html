@@ -116,10 +116,31 @@
       color: #4a044e;
     }
 
-    .bday-info .email {
+    .bday-info .cargo {
       font-size: 0.78rem;
       color: #9333ea;
       margin-top: 0.15rem;
+    }
+
+    .bday-info .empresa {
+      font-size: 0.75rem;
+      color: #a855f7;
+      margin-top: 0.1rem;
+    }
+
+    .bday-info .telefone {
+      font-size: 0.75rem;
+      color: #7c3aed;
+      margin-top: 0.1rem;
+    }
+
+    .categoria-label {
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #9ca3af;
+      padding: 0.6rem 0.9rem 0.2rem;
     }
 
     /* Eventos */
@@ -238,8 +259,12 @@
   document.getElementById('data-hoje').textContent =
     hoje.toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
 
-  function inicialMaiuscula(nome) {
+  function inicial(nome) {
     return (nome || '').trim().charAt(0).toUpperCase() || '?';
+  }
+
+  function nomeLimpo(subject) {
+    return (subject || '').replace(/^Anivers[aá]rio\s+de\s+/i, '').trim();
   }
 
   function formatarHora(dateTimeStr) {
@@ -256,21 +281,31 @@
       const res  = await fetch(`${API_BASE}/aniversariantes`);
       const data = await res.json();
 
-      if (!Array.isArray(data) || data.length === 0) {
+      const categorias = Object.keys(data || {});
+      const total = categorias.reduce((s, c) => s + data[c].length, 0);
+
+      if (categorias.length === 0 || total === 0) {
         lista.innerHTML = '<div class="state-msg">Nenhum aniversariante hoje 🎉</div>';
         badge.textContent = '0';
         return;
       }
 
-      badge.textContent = data.length;
-      lista.innerHTML = data.map(p => `
-        <div class="bday-card">
-          <div class="bday-avatar">${inicialMaiuscula(p.nome)}</div>
-          <div class="bday-info">
-            <div class="name">${p.nome || '—'}</div>
-            <div class="email">${p.email || ''}</div>
-          </div>
-        </div>
+      badge.textContent = total;
+      lista.innerHTML = categorias.map(cat => `
+        <div class="categoria-label">${cat}</div>
+        ${data[cat].map(p => {
+          const nome = nomeLimpo(p.nome);
+          return `
+          <div class="bday-card">
+            <div class="bday-avatar">${inicial(nome)}</div>
+            <div class="bday-info">
+              <div class="name">${nome || '—'}</div>
+              ${p.cargo   ? `<div class="cargo">${p.cargo}</div>`                        : ''}
+              ${p.empresa ? `<div class="empresa">${p.empresa}</div>`                    : ''}
+              ${(p.telefones || []).map(t => `<div class="telefone">📞 ${t}</div>`).join('')}
+            </div>
+          </div>`;
+        }).join('')}
       `).join('');
     } catch (e) {
       lista.innerHTML = '<div class="state-msg erro">Erro ao carregar contatos.</div>';
