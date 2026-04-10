@@ -89,25 +89,10 @@
 
     /* Aniversariantes */
     .bday-card {
-      display: flex;
-      align-items: center;
-      gap: 0.9rem;
       padding: 0.75rem 0.9rem;
       background: #fdf4ff;
       border: 1px solid #f0abfc;
       border-radius: 12px;
-    }
-
-    .bday-avatar {
-      width: 42px;
-      height: 42px;
-      border-radius: 50%;
-      background: linear-gradient(135deg, #e879f9, #a855f7);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.1rem;
-      flex-shrink: 0;
     }
 
     .bday-info .name {
@@ -129,9 +114,33 @@
     }
 
     .bday-info .telefone {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-top: 0.25rem;
+    }
+
+    .bday-info .telefone a {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
       font-size: 0.75rem;
+      font-weight: 600;
+      padding: 0.2rem 0.55rem;
+      border-radius: 999px;
+      text-decoration: none;
+    }
+
+    .bday-info .telefone a.tel-link {
+      background: #f3e8ff;
       color: #7c3aed;
-      margin-top: 0.1rem;
+      border: 1px solid #d8b4fe;
+    }
+
+    .bday-info .telefone a.wa-link {
+      background: #dcfce7;
+      color: #16a34a;
+      border: 1px solid #86efac;
     }
 
     .categoria-label {
@@ -259,12 +268,14 @@
   document.getElementById('data-hoje').textContent =
     hoje.toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
 
-  function inicial(nome) {
-    return (nome || '').trim().charAt(0).toUpperCase() || '?';
-  }
-
   function nomeLimpo(subject) {
     return (subject || '').replace(/^Anivers[aá]rio\s+de\s+/i, '').trim();
+  }
+
+  // Remove tudo que não é dígito; adiciona 55 (Brasil) se não começar com código de país
+  function waNumero(tel) {
+    const digits = tel.replace(/\D/g, '');
+    return digits.startsWith('55') ? digits : '55' + digits;
   }
 
   function formatarHora(dateTimeStr) {
@@ -297,12 +308,15 @@
           const nome = nomeLimpo(p.nome);
           return `
           <div class="bday-card">
-            <div class="bday-avatar">${inicial(nome)}</div>
             <div class="bday-info">
               <div class="name">${nome || '—'}</div>
-              ${p.cargo   ? `<div class="cargo">${p.cargo}</div>`                        : ''}
-              ${p.empresa ? `<div class="empresa">${p.empresa}</div>`                    : ''}
-              ${(p.telefones || []).map(t => `<div class="telefone">📞 ${t}</div>`).join('')}
+              ${p.cargo   ? `<div class="cargo">${p.cargo}</div>`   : ''}
+              ${p.empresa ? `<div class="empresa">${p.empresa}</div>` : ''}
+              ${(p.telefones || []).map(t => `
+                <div class="telefone">
+                  <a class="tel-link" href="tel:${t.replace(/\D/g,'')}">📞 ${t}</a>
+                  <a class="wa-link" href="https://wa.me/${waNumero(t)}" target="_blank" rel="noopener">💬 WhatsApp</a>
+                </div>`).join('')}
             </div>
           </div>`;
         }).join('')}
