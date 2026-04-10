@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Agenda da Diretora</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: #f0f2f5;
+      color: #1a1a2e;
+      min-height: 100vh;
+      padding: 2rem 1rem;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 2.5rem;
+    }
+
+    header h1 {
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: #1a1a2e;
+      letter-spacing: -0.5px;
+    }
+
+    header p {
+      font-size: 0.95rem;
+      color: #6b7280;
+      margin-top: 0.4rem;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+      max-width: 960px;
+      margin: 0 auto;
+    }
+
+    @media (max-width: 640px) {
+      .grid { grid-template-columns: 1fr; }
+    }
+
+    .section {
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 1px 4px rgba(0,0,0,.06), 0 4px 16px rgba(0,0,0,.06);
+      overflow: hidden;
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      padding: 1.2rem 1.5rem;
+      border-bottom: 1px solid #f3f4f6;
+    }
+
+    .section-header .icon {
+      font-size: 1.4rem;
+    }
+
+    .section-header h2 {
+      font-size: 1rem;
+      font-weight: 600;
+      color: #111827;
+    }
+
+    .section-header .badge {
+      margin-left: auto;
+      background: #f3f4f6;
+      color: #6b7280;
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 0.2rem 0.6rem;
+      border-radius: 999px;
+    }
+
+    .card-list {
+      padding: 0.75rem 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    /* Aniversariantes */
+    .bday-card {
+      display: flex;
+      align-items: center;
+      gap: 0.9rem;
+      padding: 0.75rem 0.9rem;
+      background: #fdf4ff;
+      border: 1px solid #f0abfc;
+      border-radius: 12px;
+    }
+
+    .bday-avatar {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #e879f9, #a855f7);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+      flex-shrink: 0;
+    }
+
+    .bday-info .name {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: #4a044e;
+    }
+
+    .bday-info .email {
+      font-size: 0.78rem;
+      color: #9333ea;
+      margin-top: 0.15rem;
+    }
+
+    /* Eventos */
+    .event-card {
+      display: flex;
+      gap: 0.9rem;
+      padding: 0.75rem 0.9rem;
+      background: #eff6ff;
+      border: 1px solid #93c5fd;
+      border-radius: 12px;
+    }
+
+    .event-time-block {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      min-width: 52px;
+      padding: 0.3rem 0.4rem;
+      background: #2563eb;
+      border-radius: 8px;
+      color: #fff;
+      flex-shrink: 0;
+    }
+
+    .event-time-block .time {
+      font-size: 0.82rem;
+      font-weight: 700;
+      line-height: 1.1;
+    }
+
+    .event-time-block .sep {
+      font-size: 0.65rem;
+      opacity: 0.7;
+      margin: 1px 0;
+    }
+
+    .event-info .title {
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: #1e3a8a;
+    }
+
+    .event-info .location {
+      font-size: 0.77rem;
+      color: #3b82f6;
+      margin-top: 0.25rem;
+    }
+
+    /* Estados de loading / vazio / erro */
+    .state-msg {
+      padding: 1.5rem 1rem;
+      text-align: center;
+      font-size: 0.85rem;
+      color: #9ca3af;
+    }
+
+    .state-msg.loading::before {
+      content: '';
+      display: block;
+      width: 28px;
+      height: 28px;
+      border: 3px solid #e5e7eb;
+      border-top-color: #6366f1;
+      border-radius: 50%;
+      animation: spin .7s linear infinite;
+      margin: 0 auto 0.7rem;
+    }
+
+    .state-msg.erro { color: #ef4444; }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>Agenda da Diretora</h1>
+  <p id="data-hoje"></p>
+</header>
+
+<div class="grid">
+
+  <!-- Aniversariantes -->
+  <section class="section">
+    <div class="section-header">
+      <span class="icon">🎂</span>
+      <h2>Aniversariantes de hoje</h2>
+      <span class="badge" id="badge-bday">—</span>
+    </div>
+    <div class="card-list" id="lista-bday">
+      <div class="state-msg loading">Carregando...</div>
+    </div>
+  </section>
+
+  <!-- Eventos -->
+  <section class="section">
+    <div class="section-header">
+      <span class="icon">📅</span>
+      <h2>Compromissos do dia</h2>
+      <span class="badge" id="badge-eventos">—</span>
+    </div>
+    <div class="card-list" id="lista-eventos">
+      <div class="state-msg loading">Carregando...</div>
+    </div>
+  </section>
+
+</div>
+
+<script>
+  // Substitua pela URL gerada pelo API Gateway
+  const API_BASE = 'https://5gq7bwjd52.execute-api.us-east-2.amazonaws.com';
+
+  // Data de hoje no header
+  const hoje = new Date();
+  document.getElementById('data-hoje').textContent =
+    hoje.toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+
+  function inicialMaiuscula(nome) {
+    return (nome || '').trim().charAt(0).toUpperCase() || '?';
+  }
+
+  function formatarHora(dateTimeStr) {
+    if (!dateTimeStr) return '--:--';
+    const d = new Date(dateTimeStr);
+    return d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+  }
+
+  // --- Aniversariantes ---
+  async function carregarAniversariantes() {
+    const lista  = document.getElementById('lista-bday');
+    const badge  = document.getElementById('badge-bday');
+    try {
+      const res  = await fetch(`${API_BASE}/aniversariantes`);
+      const data = await res.json();
+
+      if (!Array.isArray(data) || data.length === 0) {
+        lista.innerHTML = '<div class="state-msg">Nenhum aniversariante hoje 🎉</div>';
+        badge.textContent = '0';
+        return;
+      }
+
+      badge.textContent = data.length;
+      lista.innerHTML = data.map(p => `
+        <div class="bday-card">
+          <div class="bday-avatar">${inicialMaiuscula(p.nome)}</div>
+          <div class="bday-info">
+            <div class="name">${p.nome || '—'}</div>
+            <div class="email">${p.email || ''}</div>
+          </div>
+        </div>
+      `).join('');
+    } catch (e) {
+      lista.innerHTML = '<div class="state-msg erro">Erro ao carregar contatos.</div>';
+      badge.textContent = '!';
+    }
+  }
+
+  // --- Eventos ---
+  async function carregarEventos() {
+    const lista  = document.getElementById('lista-eventos');
+    const badge  = document.getElementById('badge-eventos');
+    try {
+      const res  = await fetch(`${API_BASE}/eventos`);
+      const data = await res.json();
+
+      if (!Array.isArray(data) || data.length === 0) {
+        lista.innerHTML = '<div class="state-msg">Nenhum compromisso hoje 🗓️</div>';
+        badge.textContent = '0';
+        return;
+      }
+
+      badge.textContent = data.length;
+      lista.innerHTML = data.map(e => `
+        <div class="event-card">
+          <div class="event-time-block">
+            <span class="time">${formatarHora(e.inicio)}</span>
+            <span class="sep">▾</span>
+            <span class="time">${formatarHora(e.fim)}</span>
+          </div>
+          <div class="event-info">
+            <div class="title">${e.titulo || 'Sem título'}</div>
+            ${e.local ? `<div class="location">📍 ${e.local}</div>` : ''}
+          </div>
+        </div>
+      `).join('');
+    } catch (e) {
+      lista.innerHTML = '<div class="state-msg erro">Erro ao carregar agenda.</div>';
+      badge.textContent = '!';
+    }
+  }
+
+  carregarAniversariantes();
+  carregarEventos();
+</script>
+</body>
+</html>
